@@ -1,1 +1,1 @@
-python3 pip install -r modules.txt --user
+python3 -m pip install --user -r modules.txt
