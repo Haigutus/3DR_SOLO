@@ -38,16 +38,23 @@ area_size_m = 50
 max_height_m = 35
 min_height_m = 15
 
+direction_deg = 90
+direction_m   = 100
+
 nuber_of_points = 99 # Maxmimum number of points
 
 
 # Set initial point and use names, used in litchi csv format
-initial_point = {"latitude":     59.4330543607982,
+home_point = {"latitude":     59.4330543607982,
                 "longitude":    24.7639391004639,
                 "altitude(m)":  30}
 
+d_north = math.cos(math.radians(direction_deg)) * direction_m
+d_east  = math.sin(math.radians(direction_deg)) * direction_m
+initial_point = get_location_metres(home_point, d_north, d_east)
+
 # Create list to keep all generated points
-flight_plan = [initial_point]
+flight_plan = [home_point, initial_point]
 
 while len(flight_plan) < nuber_of_points:
 
