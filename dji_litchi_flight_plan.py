@@ -43,7 +43,7 @@ def get_location_degrees_distance(original_location, degrees, distance):
     d_north = math.cos(math.radians(degrees)) * distance
     d_east = math.sin(math.radians(degrees)) * distance
 
-    # Return new location object
+    # Return new location objectS
     return get_location_metres(original_location, d_north, d_east)
 
 ### SETTINGS ###

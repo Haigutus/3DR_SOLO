@@ -81,16 +81,30 @@ def get_location_metres(original_location, dNorth, dEast):
     dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
 
     #New position in decimal degrees
-    newlat = original_location.lat + (dLat * 180/math.pi)
-    newlon = original_location.lon + (dLon * 180/math.pi)
+    new_lat = original_location.lat + (dLat * 180/math.pi)
+    new_lon = original_location.lon + (dLon * 180/math.pi)
+
     if type(original_location) is LocationGlobal:
-        targetlocation=LocationGlobal(newlat, newlon,original_location.alt)
+        target_location = LocationGlobal(new_lat, new_lon, original_location.alt)
+
     elif type(original_location) is LocationGlobalRelative:
-        targetlocation=LocationGlobalRelative(newlat, newlon,original_location.alt)
+        target_location = LocationGlobalRelative(new_lat, new_lon, original_location.alt)
+
     else:
         raise Exception("Invalid Location object passed")
 
-    return targetlocation
+    return target_location
+
+def get_location_degrees_distance(original_location, degrees, distance):
+    "Returns new location defined by angle in degrees and distance in meters"
+
+    # Find delta North and East in meters
+    d_north = math.cos(math.radians(degrees)) * distance
+    d_east = math.sin(math.radians(degrees)) * distance
+
+    # Return new location object
+    return get_location_metres(original_location, d_north, d_east)
+
 
 def get_distance_metres(aLocation1, aLocation2):
     """
@@ -388,6 +402,8 @@ def change_alt(vehicle, d_alt=0):
 
     goto(target_location, vehicle)
 
+    return target_location
+
 def change_location(vehicle, d_lat, d_lon):
 
     current_location = vehicle.location.global_relative_frame
@@ -395,6 +411,8 @@ def change_location(vehicle, d_lat, d_lon):
     target_location = get_location_metres(current_location, d_lat, d_lon)
 
     goto(target_location, vehicle)
+
+    return target_location
 
 
 
