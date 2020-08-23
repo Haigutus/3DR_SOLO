@@ -49,6 +49,7 @@ home_point = {"latitude":     59.4330543607982,
                 "longitude":    24.7639391004639,
                 "altitude(m)":  30}
 
+
 d_north = math.cos(math.radians(direction_deg)) * direction_m
 d_east  = math.sin(math.radians(direction_deg)) * direction_m
 initial_point = get_location_metres(home_point, d_north, d_east)

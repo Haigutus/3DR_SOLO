@@ -17,7 +17,7 @@ def end_flight():
 
     # Write log
     log = pandas.DataFrame(log_list)
-    log.to_csv("{}.csv".format(flight_UUID))
+    log.to_csv("{}_{}.csv".format(connection_to, flight_UUID))
     print("INFO - Flight log written for flight: {}".format(flight_UUID))
 
     # Close vehicle object before exiting script
@@ -67,51 +67,72 @@ def telemetry_callback(self, key, value):
 
 ### SETTINGS ###
 
-area_diameter_m = 50 #
-height_m = 15
-speed_ms = 10
+area_size_m = 50
+max_height_m = 35 # Drone will also take off to this altitude
+min_height_m = 15
 
-#connection_to = "SITL"
-connection_to = "solo"
+direction_deg = 10
+direction_m = 500
+
+speed_ms = 20
+
+
+
+connection_to = "sitl"
+#connection_to = "solo"
 
 ### SETTINGS END ###
 
 ### SET UP CONNECTION ###
 if connection_to == "solo":
-    print('Connecting to Solo on: udpin:0.0.0.0:14550')
-    vehicle = connect('udpin:0.0.0.0:14550', wait_ready=True)
-    #vehicle.wait_ready(True)
+    connection_string = "udpin:0.0.0.0:14550"
 
 else:
     import dronekit_sitl
     sitl = dronekit_sitl.start_default()
     connection_string = sitl.connection_string()
-    print('Connecting to SITL vehicle on: %s' % connection_string)
-    vehicle = connect(connection_string, wait_ready=True)
 
-### SET UP CONNECTION END ###
-
+print('Connecting to {} vehicle on: {}'.format(connection_to, connection_string))
+vehicle = connect(connection_string, wait_ready=True)
 
 #Add observer for the vehicle's telemetry
 vehicle.add_attribute_listener('*', telemetry_callback)
 
+### SET UP CONNECTION END ###
+
 ### FLIGHT PROCESS ###
 
 #Arm the vehicle and fly to target altitude (in meters)
-arm_and_takeoff(height_m, vehicle)
+arm_and_takeoff(max_height_m, vehicle)
 
-# Get initial position
-start_location = vehicle.location.global_relative_frame
+# Get the home location
+home_location = vehicle.location.global_relative_frame
+
+# Get the start location, around what to start the flight process
+d_north = math.cos(math.radians(direction_deg)) * direction_m
+d_east  = math.sin(math.radians(direction_deg)) * direction_m
+start_location = get_location_metres(home_location, d_north, d_east)
 
 # Hover around initial position
-while True:
-    d_north = random.randrange(area_diameter_m / 2 * -1, area_diameter_m / 2)
-    d_east = random.randrange(area_diameter_m/ 2 * -1, area_diameter_m / 2)
+while vehicle.mode.name == "GUIDED": #Stop action if we are no longer in guided mode.
+
+    # Get random delta in meters from starting point within area
+    positive_half_area_size = int(area_size_m / 2)
+    negative_half_area_size = positive_half_area_size * -1
+
+    d_north = random.randrange(negative_half_area_size, positive_half_area_size)
+    d_east = random.randrange(negative_half_area_size, positive_half_area_size)
+
+    # Get new latitude and longitude from deltas
     next_target = get_location_metres(start_location, d_north, d_east)
 
+    # Set random altitude
+    next_target.alt = random.randrange(min_height_m, max_height_m)
+
     distance_from_home = get_distance_metres(start_location, next_target)
-    print("Going to distance from home [m]: {:.2f}".format(distance_from_home))
+    print("Going to distance from start [m]: {:.2f}".format(distance_from_home))
 
     goto(next_target, vehicle, speed=speed_ms)
 
-
+print("INFO - Exiting, drone mode changed from GUIDED -> {}".format(vehicle.mode.name))
+end_flight()
