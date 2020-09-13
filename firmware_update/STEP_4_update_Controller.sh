@@ -1,3 +1,4 @@
+#!/bin/sh
 PASSWORD="TjSDBkAu"
 FILENAME_1="3dr-controller.tar.gz"
 FILENAME_2="3dr-controller.tar.gz.md5"

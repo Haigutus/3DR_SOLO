@@ -1,3 +1,4 @@
+#!/bin/sh
 # In case of green or orange cube download different image and change the filename here
 
 PASSWORD="TjSDBkAu"

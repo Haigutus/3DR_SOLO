@@ -1,4 +1,4 @@
-
+#!/bin/bash
 REPOSITIRY="https://github.com/OpenSolo/OpenSolo"
 RELEASE="OpenSolo-4.0.0"
 FILES=(

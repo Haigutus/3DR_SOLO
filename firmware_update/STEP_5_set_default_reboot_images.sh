@@ -1,3 +1,4 @@
+#!/bin/sh
 # Do this only after you have verified that new firmware is good. 
 # If you have issues with firmware you can now still reset to 3DR factory image.
 # After running this script the facotry images are replaced with ones you uploaded in previous steps.

@@ -1,3 +1,4 @@
+#!/bin/sh
 PASSWORD="TjSDBkAu"
 FILENAME_1="3dr-solo.tar.gz"
 FILENAME_2="3dr-solo.tar.gz.md5"
