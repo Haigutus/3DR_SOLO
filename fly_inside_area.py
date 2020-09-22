@@ -67,17 +67,45 @@ def telemetry_callback(self, key, value):
 
 ### SETTINGS ###
 
-area_size_m = 50
+area_size_m = 115
 max_height_m = 35 # Drone will also take off to this altitude
 min_height_m = 25
 
-direction_deg = 10
-direction_m = 10
+direction_deg = 140
+direction_m = 300
 
 #flight_type = "random"
 flight_type = "box"
 
 speed_ms = 20
+
+settings = [
+    {"repeat": 3,
+     "area_size_m": 10,
+     "max_height_m": 50,
+     "min_height_m": 40,
+     "direction_deg": 140,
+     "direction_m": 100,
+     "flight_type": "box",
+    #"flight_type": "random"
+     },
+    {"repeat": 3,
+     "area_size_m": 10,
+     "max_height_m": 50,
+     "min_height_m": 40,
+     "direction_deg": 140,
+     "direction_m": 200,
+     "flight_type": "box"
+     },
+    {"repeat": 3,
+     "area_size_m": 10,
+     "max_height_m": 50,
+     "min_height_m": 40,
+     "direction_deg": 140,
+     "direction_m": 350,
+     "flight_type": "box"
+     }
+]
 
 if len(sys.argv) == 2:
     connection_to = sys.argv[1]
@@ -113,52 +141,73 @@ arm_and_takeoff(max_height_m, vehicle)
 # Get the home location
 home_location = vehicle.location.global_relative_frame
 
-# Get the start location, around what to start the flight process
-start_location = get_location_degrees_distance(home_location, direction_deg, direction_m)
+# For each setting
+for setting in settings:
 
-# Hover around initial position
-while vehicle.mode.name == "GUIDED": #Stop action if we are no longer in guided mode.
+    print("settings")
+    print(setting)
 
-    # Get random delta in meters from starting point within area
-    positive_half_area_size = int(area_size_m / 2)
-    negative_half_area_size = positive_half_area_size * -1
+    repeat = setting["repeat"]
+    area_size_m = setting["area_size_m"]
+    max_height_m = setting["max_height_m"]
+    min_height_m = setting["min_height_m"]
 
-    if flight_type == "random":
-        d_north = random.randrange(negative_half_area_size, positive_half_area_size)
-        d_east = random.randrange(negative_half_area_size, positive_half_area_size)
+    direction_deg = setting["direction_deg"]
+    direction_m = setting["direction_m"]
 
-        # Get new latitude and longitude from deltas
-        next_target = get_location_metres(start_location, d_north, d_east)
+    flight_type = setting["flight_type"]
 
-        # Set random altitude
-        next_target.alt = random.randrange(min_height_m, max_height_m)
+    # Get the start location, around what to start the flight process
+    start_location = get_location_degrees_distance(home_location, direction_deg, direction_m)
 
-        distance_from_home = get_distance_metres(start_location, next_target)
-        print("Going to distance from start [m]: {:.2f}".format(distance_from_home))
+    while repeat > 0:
+        print("Repeat: {}".format(repeat))
 
-        goto(next_target, vehicle, speed=speed_ms)
+        # Hover around initial position
+        if vehicle.mode.name == "GUIDED": #Stop action if we are no longer in guided mode.
 
-    elif flight_type == "box":
-        # right at max altitude
-        right_hi_point = get_location_degrees_distance(start_location, direction_deg + 90, positive_half_area_size)
+            # Get random delta in meters from starting point within area
+            positive_half_area_size = int(area_size_m / 2)
+            negative_half_area_size = positive_half_area_size * -1
 
-        # right at min altitude
-        right_low_point = LocationGlobalRelative(right_hi_point.lat, right_hi_point.lon, min_height_m)
+            if flight_type == "random":
+                d_north = random.randrange(negative_half_area_size, positive_half_area_size)
+                d_east = random.randrange(negative_half_area_size, positive_half_area_size)
 
-        # left at max altitude
-        left_hi_point = get_location_degrees_distance(start_location, direction_deg - 90, positive_half_area_size)
+                # Get new latitude and longitude from deltas
+                next_target = get_location_metres(start_location, d_north, d_east)
 
-        # left at min altitude
-        left_low_point = LocationGlobalRelative(left_hi_point.lat, left_hi_point.lon, min_height_m)
+                # Set random altitude
+                next_target.alt = random.randrange(min_height_m, max_height_m)
 
-        for point in [right_hi_point, right_low_point, left_low_point, left_hi_point]:
-            if vehicle.mode.name == "GUIDED":
-                goto(point, vehicle, speed=speed_ms)
+                distance_from_home = get_distance_metres(start_location, next_target)
+                print("Going to distance from start [m]: {:.2f}".format(distance_from_home))
+
+                goto(next_target, vehicle, speed=speed_ms)
+
+            elif flight_type == "box":
+                # right at max altitude
+                right_hi_point = get_location_degrees_distance(start_location, direction_deg + 90, positive_half_area_size)
+
+                # right at min altitude
+                right_low_point = LocationGlobalRelative(right_hi_point.lat, right_hi_point.lon, min_height_m)
+
+                # left at max altitude
+                left_hi_point = get_location_degrees_distance(start_location, direction_deg - 90, positive_half_area_size)
+
+                # left at min altitude
+                left_low_point = LocationGlobalRelative(left_hi_point.lat, left_hi_point.lon, min_height_m)
+
+                for point in [right_hi_point, right_low_point, left_low_point, left_hi_point]:
+                    if vehicle.mode.name == "GUIDED":
+                        goto(point, vehicle, speed=speed_ms)
 
 
 
-    else:
-        print("No flight type available with name: {}".format(flight_type))
+            else:
+                print("No flight type available with name: {}".format(flight_type))
+
+        repeat -= 1
 
 
 print("INFO - Exiting, drone mode changed from GUIDED -> {}".format(vehicle.mode.name))
